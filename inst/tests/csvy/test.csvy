@@ -1,7 +1,8 @@
 ---
 name: my-dataset
 source: https://github.com/leeper/csvy/tree/master/inst/examples
-fields:
+schema:
+  fields:
   - name: var1
     title: variable 1
     type: string

@@ -201,19 +201,18 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
     if (verbose) cat('Processed', n_read, 'lines of YAML',
                      'metadata with the following top-level fields:',
                      brackify(yaml_names), '\n')
-    if ('fields' %chin% yaml_names) {
-      new_types = sapply(yaml_header$fields, `[[`, 'type')
+    if ('schema' %chin% yaml_names) {
+      new_types = sapply(yaml_header$schema$fields, `[[`, 'type')
       if (any(null_idx <- sapply(new_types, is.null)))
         new_types = do.call(c, new_types)
-      synonms = data.table(
-        r_type = rep(c('character', 'integer', 'numeric'),
-                     c(2L, 2L, 3L)),
-        syn = c('character', 'string', 'integer', 'int',
-                'numeric', 'number', 'double'),
-        key = 'syn'
-      )
+      synonms = rbindlist(list(
+        character = list(syn = c('character', 'string')),
+        integer = list(syn = c('integer', 'int')),
+        numeric = list(syn = c('numeric', 'number', 'double'))
+      ), idcol = 'r_type')
+      setkeyv(synonms, 'syn')
       new_types = synonms[list(new_types)]$r_type
-      new_names = sapply(yaml_header$fields[!null_idx], `[[`, 'name')
+      new_names = sapply(yaml_header$schema$fields[!null_idx], `[[`, 'name')
 
       # resolve any conflicts with colClasses, if supplied;
       #   colClasses (if present) is already in list form by now

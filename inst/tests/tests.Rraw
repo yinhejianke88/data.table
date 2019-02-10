@@ -80,7 +80,7 @@ sugg = c(
   "xts",            # we have xts methods in R/xts.R
   "nanotime",       # fwrite looks for the 'nanotime' class name at C level (but we have our own writer in C, though)
   "R.utils",        # for fread to accept .gz and .bz2 files directly
-  "yaml",           # for fread's yaml argumeny (csvy capability)
+  "yaml"            # for fread's yaml argumeny (csvy capability)
   # zoo             # In DESCRIPTION:Suggests otherwise R CMD check warning: '::' or ':::' import not declared from: 'zoo'; it is tested in other.Rraw though
   # reshape2        # In DESCRIPTION:Suggests otherwise same R CMD check warning. See fmelt.R line 1 refers to reshape2 depending on R 3.0.0, but now we do too,
 )                   # perhaps something can be improved now. dcast and melt methods for data.table are tested directly here in main without needing reshape2 loaded.
@@ -13425,11 +13425,13 @@ DT_yaml = copy(DT)
 attr(DT_yaml, 'yaml_metadata') =
   list(name = "my-dataset",
        source = "https://github.com/leeper/csvy/tree/master/inst/examples",
-       fields = list(list(name = "var1", title = "variable 1",
-                          type = "string", description = "explaining var1",
-                          constraints = list(list(required = TRUE))),
-                     list(name = "var2", title = "variable 2", type = "integer"),
-                     list(name = "var3", title = "variable 3", type = "number")))
+       schema = list(fields = list(
+         list(name = "var1", title = "variable 1", type = "string", 
+              description = "explaining var1", 
+              constraints = list(list(required = TRUE))), 
+         list(name = "var2", title = "variable 2", type = "integer"), 
+         list(name = "var3", title = "variable 3", type = "number")
+       )))
 ## with skip = '__auto__', fread can figure out
 ##   how to start after the metadata (just ignoring it)
 test(1985.1, fread(f), DT)
@@ -13467,26 +13469,28 @@ DT_out = data.table(var1 = c("A", "B"),
                     var3 = c(2.5, 4.3))
 meta =
   list(name = NULL,
-       fields = list(list(name = "var1", title = "variable 1",
-                          type = "string",
-                          description = "a single-quoted character variable"),
-                     list(name = "var2", title = "variable 2",
-                          type = "integer"),
-                     list(name = "var3", title = "variable 3",
-                          type = "number",
-                          description = "European-style numeric")),
+       schema = list(fields = list(
+         list(name = "var1", title = "variable 1", type = "string", 
+              description = "a single-quoted character variable"), 
+         list(name = "var2", title = "variable 2", type = "integer"), 
+         list(name = "var3", title = "variable 3", type = "number", 
+              description = "European-style numeric")
+       )),
        header = TRUE, sep = "|", dec = ",",
        quote = "'", na.strings = "@")
 attr(DT_out, 'yaml_metadata') = meta
-test(1985.8, fread(testDir('csvy/test_attributes.csvy'), yaml = TRUE), DT_out)
+test(1985.8, fread(testDir('csvy/test_attributes.csvy'), yaml = TRUE), DT_out,
+     warning = "User-supplied 'sep' will override")
 ## user-specified attributes can override data from YAML
 meta$sep = "-"
 attr(DT_out, 'yaml_metadata') = meta
-test(1985.9, fread(testDir('csvy/test_attr_wrong.csvy'), yaml = TRUE, sep = '|'), DT_out, warning = 'User-supplied.*sep.*override')
+test(1985.9, fread(testDir('csvy/test_attr_wrong.csvy'), yaml = TRUE, sep = '|'), DT_out,
+     warning = 'User-supplied.*sep.*override')
 ## error if YAML malformed
 test(1985.10, fread(testDir('csvy/test_incomplete_header.csvy'), yaml = TRUE),
      error = 'Reached the end.*YAML.*valid csvy')
-test(1985.11, fread(testDir('issue_2566.csv'), yaml = TRUE),
+## use any other CSV in test directory which doesn't have YAML
+test(1985.11, fread(testDir('issue_2051.csv'), yaml = TRUE),
      error = 'Encountered.*unskipped.*constitute.*valid YAML')
 ## no problem if some fields are missing a type (just
 ##   resort to standard auto-inferral, i.e., identical to
@@ -13495,15 +13499,18 @@ DT = data.table(var1 = c("A", "B"), var2 = c(1L, 3L),
                 var3 = c(2.5, 4.3))
 attr(DT, 'yaml_metadata') =
   list(name = "my-dataset", source = "https://github.com/leeper/csvy/tree/master/inst/examples",
-       fields = list(list(name = "var1"),
-                     list(name = "var2", type = "integer"),
-                     list(name = "var3", type = "number")))
+       schema = list(fields = list(
+         list(name = "var1"), list(name = "var2", type = "integer"), 
+         list(name = "var3", type = "number")
+       )))
 test(1985.12, fread(testDir('csvy/test_missing_type.csvy'), yaml = TRUE), DT)
 ## skip applies starting after the YAML header
 attr(DT, 'yaml_metadata') =
-  list(fields = list(list(name = "var1", type = "string"),
-                     list(name = "var2", type = "integer"),
-                     list(name = "var3", type = "number")))
+  list(schema = list(fields = list(
+    list(name = "var1", type = "string"), 
+    list(name = "var2", type = "integer"), 
+    list(name = "var3", type = "number")
+  )))
 test(1985.13, fread(testDir('csvy/test_skip.csvy'), yaml = TRUE, skip = 2L), DT)
 ## user-supplied col.names override metadata (as for colClasses)
 cn = paste0('V', 1:3)

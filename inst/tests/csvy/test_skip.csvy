@@ -1,5 +1,6 @@
 ---
-fields:
+schema:
+  fields:
   - name: var1
     type: string
   - name: var2
