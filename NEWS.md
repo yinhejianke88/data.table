@@ -6,6 +6,8 @@
 
 1. `:=` no longer recycles length>1 RHS vectors. There was a warning when recycling left a remainder but no warning when the LHS length was an exact multiple of the RHS length (the same behaviour as base R). Consistent feedback for several years has been that recycling is more often a bug. In rare cases where you need to recycle a length>1 vector, use `rep()` explicitly. Single values are still recycled silently as before. Early warning was given in [this tweet](https://twitter.com/MattDowle/status/1088544083499311104). The 758 CRAN and Bioconductor packages using data.table were tested and the maintainers of the 16 packages affected (2%) were consulted before going ahead, [#3310](https://github.com/Rdatatable/data.table/pull/3310).
 
+2. `fread` gains argument `yaml` (default `FALSE`) and the ability to parse CSVY-formatted input files (i.e., csv files with metadata in a header formatted as YAML; see http://csvy.org/), [#1701](https://github.com/Rdatatable/data.table/issues/1701). See `?fread` and files in `/inst/tests/csvy/` for sample formats; please provide feedback if you find this feature useful and would like extended capabilities. For now, consider it experimental, meaning the API/arguments may change. Thanks to @leeper at [`rio`](https://github.com/leeper/rio) for the inspiration and @MichaelChirico for implementing.
+
 #### BUG FIXES
 
 1. `rbindlist()` of a malformed factor missing levels attribute is now a helpful error rather than a cryptic error about `STRING_ELT`, [#3315](https://github.com/Rdatatable/data.table/issues/3315). Thanks to Michael Chirico for reporting.
