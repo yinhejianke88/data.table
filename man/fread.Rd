@@ -23,7 +23,7 @@ showProgress=getOption("datatable.showProgress", interactive()),
 data.table=getOption("datatable.fread.datatable", TRUE),
 nThread=getDTthreads(verbose),
 logical01=getOption("datatable.logical01", FALSE),  # due to change to TRUE; see NEWS
-YAML=FALSE,autostart=NA
+yaml=FALSE,autostart=NA
 )
 }
 \arguments{
