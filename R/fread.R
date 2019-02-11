@@ -149,6 +149,8 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
     # whitespace at the beginning or end of na.strings is checked at C level and is an error there; test 1804
   }
   if (yaml) {
+    # for tracking which YAML elements may be overridden by being declared explicitly
+    call_args = names(match.call())
     if (!requireNamespace('yaml', quietly = TRUE))
       stop("'data.table' relies on the package 'yaml' to parse the file header; please add this to your library with install.packages('yaml') and try again.") # nocov
     if (is.character(skip))
@@ -201,7 +203,7 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
                      brackify(yaml_names), '\n')
     # process header first since it impacts how to handle colClasses
     if ('header' %chin% yaml_names) {
-      if (!missing(header)) warning("User-supplied 'header' will override that found in metadata.")
+      if ('header' %chin% call_args) warning("User-supplied 'header' will override that found in metadata.")
       else header = as.logical(yaml_header$header)
     }
     if ('schema' %chin% yaml_names) {
@@ -217,10 +219,10 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
       new_types = synonms[list(new_types)]$r_type
       new_names = sapply(yaml_header$schema$fields[!null_idx], `[[`, 'name')
 
-      if (!missing(col.names)) warning("User-supplied column names in 'col.names' will override those found in YAML metadata.")
+      if ('col.names' %chin% call_args) warning("User-supplied column names in 'col.names' will override those found in YAML metadata.")
       # resolve any conflicts with colClasses, if supplied;
       #   colClasses (if present) is already in list form by now
-      if (!missing(colClasses)) {
+      if ('colClasses' %chin% call_args) {
         if (any(idx_name <- new_names %chin% unlist(colClasses))) {
           matched_name_idx = which(idx_name)
           if (!all(idx_type <- sapply(matched_name_idx, function(ii) {
@@ -249,7 +251,7 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
         #   at the C level; instead, apply these in post through col.names
         #   and send the auto-generated V1:Vn as dummies
         if (identical(header, FALSE)) {
-          if (missing(col.names)) col.names = new_names
+          if (!'col.names' %chin% call_args) col.names = new_names
           new_names = paste0('V', seq_along(new_names))
         }
         colClasses = tapply(new_names, new_types, c, simplify=FALSE)
@@ -257,21 +259,21 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
     }
     sep_syn = c('sep', 'delimiter')
     if (any(sep_idx <- sep_syn %chin% yaml_names)) {
-      if (!missing(sep)) warning("User-supplied 'sep' will override that found in metadata.")
+      if ('sep' %chin% call_args) warning("User-supplied 'sep' will override that found in metadata.")
       else sep = yaml_header[[ sep_syn[sep_idx][1L] ]]
     }
     quote_syn = c('quote', 'quoteChar', 'quote_char')
     if (any(quote_idx <- quote_syn %chin% yaml_names)) {
-      if (!missing(quote)) warning("User-supplied 'quote' will override that found in metadata.")
+      if ('quote' %chin% call_args) warning("User-supplied 'quote' will override that found in metadata.")
       else quote = yaml_header[[ quote_syn[quote_idx][1L] ]]
     }
     dec_syn = c('dec', 'decimal')
     if (any(dec_idx <- dec_syn %chin% yaml_names)) {
-      if (!missing(dec)) warning("User-supplied 'dec' will override that found in metadata.")
+      if ('dec' %chin% call_args) warning("User-supplied 'dec' will override that found in metadata.")
       else dec = yaml_header[[ dec_syn[dec_idx][1L] ]]
     }
     if ('na.strings' %chin% yaml_names) {
-      if (!missing(na.strings)) warning("User-supplied 'na.strings' will override that found in metadata.")
+      if ('na.strings' %chin% call_args) warning("User-supplied 'na.strings' will override that found in metadata.")
       else na.strings = yaml_header$na.strings
     }
     if (is.integer(skip)) skip = skip + n_read
