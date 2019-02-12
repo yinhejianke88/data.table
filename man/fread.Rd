@@ -95,8 +95,15 @@ When \code{quote} is a single character,
 To read fields \emph{as is} instead, use \code{quote = ""}.
 
 \bold{CSVY Support:}
-Currently, the \code{yaml} setting is somewhat inflexible with respect to incorporating metadata to facilitate file reading. Information on column classes should be stored at the top level under the heading \code{fields}; those with both a \code{type} and a \code{name} sub-heading will be merged into \code{colClasses}. \code{fread} can also parse the field separator if it's stored under the top-level heading \code{sep} or \code{delimiter}; the \code{header} argument under heading \code{header}; the \code{quote} argument under heading \code{quote}, \code{quoteChar}, or \code{quote_char}; the \code{dec} argument under heading \code{dec} or \code{decimal}; and the \code{na.strings} argument under heading \code{na.strings}.
+Currently, the \code{yaml} setting is somewhat inflexible with respect to incorporating metadata to facilitate file reading. Information on column classes should be stored at the top level under the heading \code{schema} and subheading \code{fields}; those with both a \code{type} and a \code{name} sub-heading will be merged into \code{colClasses}. Other supported elements are as follows:
 
+  \itemize{
+    \item{ \code{sep} (or alias \code{delimiter}) }
+    \item{ \code{header} }
+    \item{ \code{quote} (or aliases \code{quoteChar}, \code{quote_char}) }
+    \item{ \code{dec} (or alias \code{decimal}) }
+    \item{ \code{na.strings} }
+  }
 
 \bold{File Download:}
 
