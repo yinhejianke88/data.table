@@ -13446,7 +13446,7 @@ test(1985.04,
 ## user input is taken as most intentional & overrides YAML
 DT_yaml[ , var2 := as.numeric(var2)]
 test(1985.05, fread(f, yaml = TRUE, colClasses = list(numeric = 'var2')),
-     DT_yaml, warning = 'colClasses.*YAML header are in conflict.*var2')
+     DT_yaml, message = 'colClasses.*YAML header are in conflict.*var2')
 ## extraneous/unused fields shouldn't throw off reading
 DT = fread(testDir('csvy/test_extraneous.csvy'), yaml = TRUE)
 test(1985.06, names(DT), c('Date', 'WTI'))
@@ -13482,37 +13482,37 @@ test(1985.08, fread(testDir('csvy/test_attributes.csvy'), yaml = TRUE), DT_out)
 meta$sep = "-"
 setattr(DT_out, 'yaml_metadata', meta)
 test(1985.09, fread(testDir('csvy/test_override_sep.csvy'), yaml = TRUE, sep = '|'), DT_out,
-     warning = 'User-supplied.*sep.*override')
+     message = 'User-supplied.*sep.*override')
 
 meta$sep = "|"
 setattr(DT_out, 'yaml_metadata', meta)
 test(1985.10, fread(testDir('csvy/test_override_header.csvy'), yaml = TRUE, header = FALSE),
-     DT_out, warning = 'User-supplied.*header.*override')
+     DT_out, message = 'User-supplied.*header.*override')
 col.names = c('x', 'y', 'z')
 setnames(DT_out, col.names)
 test(1985.11, fread(testDir('csvy/test_override_header.csvy'), yaml = TRUE, header = FALSE, col.names = col.names), DT_out, 
-     warning = c('User-supplied.*header.*override', 'User-supplied.*col.names.*override'))
+     message = c('User-supplied.*header.*override', 'User-supplied.*col.names.*override'))
 
 test(1985.12, fread(testDir('csvy/test_attributes.csvy'), yaml = TRUE, col.names = col.names), 
-     DT_out, warning = 'User-supplied.*col.names')
+     DT_out, message = 'User-supplied.*col.names')
 
 setnames(DT_out, c('var1', 'var2', 'var3'))
 meta$quote = "^"
 setattr(DT_out, 'yaml_metadata', meta)
 test(1985.13, fread(testDir('csvy/test_override_quote.csvy'), yaml = TRUE, quote = "'"),
-     DT_out, warning = 'User-supplied.*quote')
+     DT_out, message = 'User-supplied.*quote')
      
 meta$quote = "'"
 meta$dec = "."
 setattr(DT_out, 'yaml_metadata', meta)
 test(1985.14, fread(testDir('csvy/test_override_dec.csvy'), yaml = TRUE, dec = ','),
-     DT_out, warning = 'User-supplied.*dec')
+     DT_out, message = 'User-supplied.*dec')
   
 meta$dec = ',' 
 meta$na.strings = 'NA'
 setattr(DT_out, 'yaml_metadata', meta)
 test(1985.15, fread(testDir('csvy/test_override_na.csvy'), yaml = TRUE, na.strings = '@'),
-     DT_out, warning = 'User-supplied.*na.strings')
+     DT_out, message = 'User-supplied.*na.strings')
      
 ## error if YAML malformed
 test(1985.16, fread(testDir('csvy/test_incomplete_header.csvy'), yaml = TRUE),

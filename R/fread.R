@@ -203,7 +203,7 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
                      brackify(yaml_names), '\n')
     # process header first since it impacts how to handle colClasses
     if ('header' %chin% yaml_names) {
-      if ('header' %chin% call_args) warning("User-supplied 'header' will override that found in metadata.")
+      if ('header' %chin% call_args) message("User-supplied 'header' will override that found in metadata.")
       else header = as.logical(yaml_header$header)
     }
     if ('schema' %chin% yaml_names) {
@@ -219,7 +219,7 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
       new_types = synonms[list(new_types)]$r_type
       new_names = sapply(yaml_header$schema$fields[!null_idx], `[[`, 'name')
 
-      if ('col.names' %chin% call_args) warning("User-supplied column names in 'col.names' will override those found in YAML metadata.")
+      if ('col.names' %chin% call_args) message("User-supplied column names in 'col.names' will override those found in YAML metadata.")
       # resolve any conflicts with colClasses, if supplied;
       #   colClasses (if present) is already in list form by now
       if ('colClasses' %chin% call_args) {
@@ -229,7 +229,7 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
             new_names[ii] %chin% colClasses[[ new_types[ii] ]]
           }))) {
             plural = sum(idx_type) > 1L
-            warning('colClasses dictated by user input and ',
+            message('colClasses dictated by user input and ',
                     'those read from YAML header are in conflict ',
                     '(specifically, for column', if (plural) 's',
                     ' [', paste(new_names[matched_name_idx[!idx_type]],
@@ -259,21 +259,21 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
     }
     sep_syn = c('sep', 'delimiter')
     if (any(sep_idx <- sep_syn %chin% yaml_names)) {
-      if ('sep' %chin% call_args) warning("User-supplied 'sep' will override that found in metadata.")
+      if ('sep' %chin% call_args) message("User-supplied 'sep' will override that found in metadata.")
       else sep = yaml_header[[ sep_syn[sep_idx][1L] ]]
     }
     quote_syn = c('quote', 'quoteChar', 'quote_char')
     if (any(quote_idx <- quote_syn %chin% yaml_names)) {
-      if ('quote' %chin% call_args) warning("User-supplied 'quote' will override that found in metadata.")
+      if ('quote' %chin% call_args) message("User-supplied 'quote' will override that found in metadata.")
       else quote = yaml_header[[ quote_syn[quote_idx][1L] ]]
     }
     dec_syn = c('dec', 'decimal')
     if (any(dec_idx <- dec_syn %chin% yaml_names)) {
-      if ('dec' %chin% call_args) warning("User-supplied 'dec' will override that found in metadata.")
+      if ('dec' %chin% call_args) message("User-supplied 'dec' will override that found in metadata.")
       else dec = yaml_header[[ dec_syn[dec_idx][1L] ]]
     }
     if ('na.strings' %chin% yaml_names) {
-      if ('na.strings' %chin% call_args) warning("User-supplied 'na.strings' will override that found in metadata.")
+      if ('na.strings' %chin% call_args) message("User-supplied 'na.strings' will override that found in metadata.")
       else na.strings = yaml_header$na.strings
     }
     if (is.integer(skip)) skip = skip + n_read
