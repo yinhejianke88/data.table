@@ -213,7 +213,9 @@ fread <- function(input="",file=NULL,text=NULL,cmd=NULL,sep="auto",sep2="auto",d
       synonms = rbindlist(list(
         character = list(syn = c('character', 'string')),
         integer = list(syn = c('integer', 'int')),
-        numeric = list(syn = c('numeric', 'number', 'double'))
+        numeric = list(syn = c('numeric', 'number', 'double')),
+        factor = list(syn = c('factor', 'categorical')),
+        integer64 = list(syn = c('integer64', 'int64'))
       ), idcol = 'r_type')
       setkeyv(synonms, 'syn')
       new_types = synonms[list(new_types)]$r_type
