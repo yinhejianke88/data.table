@@ -113,29 +113,7 @@ format.data.table <- function (x, ..., justify="none") {
   if (is.atomic(x) && !is.null(x)) {
     stop("Internal structure doesn't seem to be a list. Possibly corrupt data.table.")
   }
-  format.item <- function(x) {
-    if (is.null(x))  # NULL item in a list column
-      ""
-    else if (is.atomic(x) || inherits(x,"formula")) # FR #2591 - format.data.table issue with columns of class "formula"
-      paste(c(format(head(x, 6L), justify=justify, ...), if (length(x) > 6L) "..."), collapse=",")  # fix for #5435 - format has to be added here...
-    else
-      fmt(x)
-  }
-  # FR #1091 for pretty printing of character
-  # TODO: maybe instead of doing "this is...", we could do "this ... test"?
-  char.trunc <- function(x, trunc.char = getOption("datatable.prettyprint.char")) {
-    trunc.char = max(0L, suppressWarnings(as.integer(trunc.char[1L])), na.rm=TRUE)
-    if (!is.character(x) || trunc.char <= 0L) return(x)
-    idx = which(nchar(x) > trunc.char)
-    x[idx] = paste0(substr(x[idx], 1L, as.integer(trunc.char)), "...")
-    x
-  }
-  do.call("cbind",lapply(x,function(col,...){
-    if (!is.null(dim(col))) stop("Invalid column: it has dimensions. Can't format it. If it's the result of data.table(table()), use as.data.table(table()) instead.")
-    if (is.list(col)) col = vapply_1c(col, format.item)
-    else col = format(char.trunc(col), justify=justify, ...) # added an else here to fix #5435
-    col
-  },...))
+  do.call("cbind", lapply(x, format_col, ..., justify=justify))
 }
 
 mimicsAutoPrint = c("knit_print.default")
@@ -152,10 +130,37 @@ shouldPrint = function(x) {
 #   as opposed to printing a blank line, for excluding col.names per PR #1483
 cut_top = function(x) cat(capture.output(x)[-1L], sep = '\n')
 
-fmt = function(x, ...) {
-  UseMethod("fmt")
+format_col = function(x, ...) {
+  UseMethod("format_col")
 }
 
-fmt.default = function(x, ...) {
-  paste0("<", class(x)[1L], ">")
+format_list_item = function(x, ...) {
+  UseMethod("format_list_item")
+}
+
+format_col.default = function(x, ...) {
+  if (!is.null(dim(x))) stop("Invalid column: it has dimensions. Can't format it. If it's the result of data.table(table()), use as.data.table(table()) instead.")
+  if (is.list(x)) return(vapply_1c(x, format_list_item))
+  format(char.trunc(x), ...) # added an else here to fix #5435
+}
+
+# #2842 -- different columns can have different tzone, so force usage in output
+format_col.POSIXct = function(x, ...) format(x, usetz = TRUE, ...)
+
+format_list_item.default = function(x, ...) {
+  if (is.null(x)) return ("") # NULL item in a list column
+  if (is.atomic(x) || inherits(x, "formula")) # FR #2591 - format.data.table issue with columns of class "formula"
+    paste(c(format(head(x, 6L), ...), if (length(x) > 6L) "..."), collapse=",")  # fix for #5435 - format has to be added here...
+  else
+    paste0("<", class(x)[1L], ">")
+}
+
+# FR #1091 for pretty printing of character
+# TODO: maybe instead of doing "this is...", we could do "this ... test"?
+char.trunc <- function(x, trunc.char = getOption("datatable.prettyprint.char")) {
+  trunc.char = max(0L, suppressWarnings(as.integer(trunc.char[1L])), na.rm=TRUE)
+  if (!is.character(x) || trunc.char <= 0L) return(x)
+  idx = which(nchar(x) > trunc.char)
+  x[idx] = paste0(substr(x[idx], 1L, as.integer(trunc.char)), "...")
+  x
 }

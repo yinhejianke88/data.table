@@ -13473,12 +13473,25 @@ setkey(x, start, end)
 setkey(y, start_f, end)
 test(1991.2, foverlaps(x, y), error="must be integer/numeric type")
 
-# fmt() generic is used
-fmt.myclass <- function(x, ...) paste0("<", class(x)[1L], ":", x$id, ">")
-registerS3method("fmt", "myclass", fmt.myclass)
+# format_col and format_list_item printing helpers/generics
+## Use case: solve #2842 by defining format_col.POSIXct to have usetz = TRUE
+DT = data.table(
+  t1 = as.POSIXct('2018-05-01 12:34:56', tz = 'UTC'),
+  t2 = as.POSIXct('2018-05-01 12:34:56', tz = 'Asia/Singapore')
+)
+test(1992.1, DT, output = 'UTC.*\\+08')
+
+# format_col generic is used
+format_col.complex = function(x, ...) sprintf('(%.1f, %.1fi)', Re(x), Im(x))
+registerS3method("format_col", "complex", format_col.complex)
+x = data.table(z = c(1 + 3i, 2 - 1i, pi + 2.718i))
+test(1992.2, x, output = '(1.0, 3.0i)')
+
+# format_list_item() generic is used
+format_list_item.myclass <- function(x, ...) paste0("<", class(x)[1L], ":", x$id, ">")
+registerS3method("format_list_item", "myclass", format_list_item.myclass)
 DT = data.table(row = 1:2, objs = list(structure(list(id = "foo"), class = "myclass"),  structure(list(id = "bar"), class = "myclass")))
-test(1992.1, print(DT), output = "myclass:foo")
-test(1992.2, print(DT), output = "myclass:bar")
+test(1992.3, print(DT), output = "myclass:foo.*myclass:bar")
 
 ###################################
 #  Add new tests above this line  #

@@ -172,6 +172,9 @@ S3method(unique, ITime)
 # which.first
 # which.last
 
-# fmt generic to support custom printers
-export(fmt)
-S3method(fmt, default)
+# generic to support custom column formatters
+export(format_col)
+S3method(format_col, default)
+S3method(format_col, POSIXct)
+export(format_list_item)
+S3method(format_list_item, default)
