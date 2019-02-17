@@ -13473,6 +13473,13 @@ setkey(x, start, end)
 setkey(y, start_f, end)
 test(1991.2, foverlaps(x, y), error="must be integer/numeric type")
 
+# fmt() generic is used
+fmt.myclass <- function(x, ...) paste0("<", class(x)[1L], ":", x$id, ">")
+registerS3method("fmt", "myclass", fmt.myclass)
+DT = data.table(row = 1:2, objs = list(structure(list(id = "foo"), class = "myclass"),  structure(list(id = "bar"), class = "myclass")))
+test(1992.1, print(DT), output = "myclass:foo")
+test(1992.2, print(DT), output = "myclass:bar")
+
 ###################################
 #  Add new tests above this line  #
 ###################################
