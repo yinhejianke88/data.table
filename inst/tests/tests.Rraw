@@ -5445,15 +5445,70 @@ test(1371.4, foverlaps(x, y, type="any", by.x=c("chr", "start", "end"), by.y=c("
 #     setorder(ans)
 #     ans
 #   }
-types=c("any", "within", "start", "end")
+
+# ----- DONOT REMOVE THIS ----------------------------------------------------------------------
+# CONTAINS CODE TO REGENERATE TEST1372.RData IF NECESSARY IN THE FUTURE
+# cc(FALSE)
+# require(GenomicRanges)
+
+# gr <- function(x) {
+#   GRanges(Rle(x[[1]]), IRanges(start=x[[2]], end=x[[3]]))
+# }
+# fo <- function(gr1, gr2, ...) {
+#   olaps = findOverlaps(gr1, gr2, ...)
+#   if (is.vector(olaps)) return(olaps)
+#   ans = setDT(list(xid=queryHits(olaps), yid=subjectHits(olaps)))
+#   setorder(ans)
+#   ans
+# }
+
+# types=c("any", "within", "start", "end", "equal")
+# mults=c("all", "first", "last")
+# maxgap=-1L; minoverlap=0L
+# verbose=FALSE; which=TRUE
+# set.seed(123)
+# this = 1L
+# times = 3L
+# ans = list() # vector("list", times*length(types)*length(mults))
+# for (run in seq_len(times)) {
+#   n1 = max(50L, sample(1e2L, 1, FALSE))
+#   n2 = max(50L, sample(1e2L, 1, FALSE))
+#   N = max(100L, sample(1e3L, 1, FALSE))
+#   i1 = sample(N, n1, TRUE)
+#   i2 = sample(N, n1, TRUE)
+#   start = pmin(i1,i2)
+#   end = pmax(i1,i2)
+#   chr  = sort(sample(paste("Chr", 1:2, sep=""), length(start), TRUE))
+#   i = setDT(list(chr=chr, start=start, end=end))
+#   i1 = sample(N, n2, TRUE)
+#   i2 = sample(N, n2, TRUE)
+#   start = pmin(i1,i2)
+#   end = pmax(i1,i2)
+#   chr  = sort(sample(paste("Chr", 1:2, sep=""), length(start), TRUE))
+#   x = setDT(list(chr=chr, start=start, end=end))
+#   x_eq_idx <- sample(nrow(i), 4L)
+#   x = rbind(x, i[sample(x_eq_idx, 10L, TRUE)]) # for type='equal' matches
+#   setkey(x); setkey(i)
+#   for (type in types) {
+#     for (mult in mults) {
+#       idx <- paste(type, mult, run, sep="_")
+#       ans[[idx]] <- fo(gr(i), gr(x), type=type, select=mult)
+#       this = this+1L
+#     }
+#   }
+# }
+# save(ans, file="~/Dropbox/Public/github/Rdatatable/datatable/inst/tests/test1372-new.RData")
+# ----------------------------------------------------------------------------------------------
+types=c("any", "within", "start", "end", "equal") # add 'equal' as well
 mults=c("all", "first", "last")
-maxgap=0L; minoverlap=1L
+maxgap=-1L; minoverlap=0L # default has changed in IRanges/GenomicRanges :: findOverlaps
 verbose=FALSE; which=TRUE
 test_no = 1372.0
-load(testDir("test1372.Rdata"))  # ans. Saved results to avoid loading GenomicRanges
+load(testDir("test1372.Rdata")) # Regenerated on 17/02/2019 to include type = 'equal'. Var 'ans' has all the results saved by running GenomicRanges separately using code above, is a list with names of the format type_mult_run
 set.seed(123)
 this = 1L
-for (run in 1:3) {
+times = 3L
+for (run in seq_len(times)) {
   n1 = max(50L, sample(1e2L, 1, FALSE))
   n2 = max(50L, sample(1e2L, 1, FALSE))
   N = max(100L, sample(1e3L, 1, FALSE))
@@ -5469,16 +5524,19 @@ for (run in 1:3) {
   end = pmax(i1,i2)
   chr  = sort(sample(paste("Chr", 1:2, sep=""), length(start), TRUE))
   x = setDT(list(chr=chr, start=start, end=end))
+  x_eq_idx <- sample(nrow(i), 4L)
+  x = rbind(x, i[sample(x_eq_idx, 10L, TRUE)]) # for type='equal' matches
   setkey(x); setkey(i)
   for (type in types) {
     for (mult in mults) {
       # data.table overlap join
       nomatch = if(mult == "all") NULL else NA_integer_
       thisans = foverlaps(i, x, mult=mult, type=type, nomatch=nomatch, which=which, verbose=verbose)
-      # ans[[this]] contains fo(gr(i), gr(x), type=type, select=mult)
       test_no = test_no+.01
       # cat("test =", test_no, ", run = ", run, ", type = ", type, ", mult = ", mult, "\n", sep="")
-      test(test_no, thisans, ans[[this]])
+      idx = paste(type, mult, run, sep="_")
+      # ans[[idx]] contains fo(gr(i), gr(x), type=type, select=mult)
+      test(test_no, thisans, ans[[idx]])
       this = this+1L
     }
   }
@@ -6438,7 +6496,7 @@ dt2 = data.table(x=3:7, y=8:12)
 setkey(dt1)
 setkey(dt2)
 test(1473, foverlaps(dt1,dt2, which=TRUE, nomatch=NULL, type="equal"),
-           error="not implemented yet") # data.table(xid=3:5, yid=1:3)
+           data.table(xid=3:5, yid=1:3))
 
 # More tests for `frankv`, #760
 DT = data.table(x=c(4, 1, 4, NA, 1, NA, 4), y=c(1, 1, 1, 0, NA, 0, 2))
@@ -9295,7 +9353,7 @@ test(1658.23, fwrite(ok_dt, 1), error="is.character\\(file\\).*not TRUE")
 test(1658.24, fwrite(ok_dt, quote=123), error="identical\\(quote.*auto.*FALSE.*TRUE")
 test(1658.25, fwrite(ok_dt, sep="..."), error="nchar(sep)")
 test(1658.26, fwrite(ok_dt, qmethod=c("double", "double")), error="length(qmethod)")
-test(1658.27, fwrite(ok_dt, col.names="foobar"), error="isLOGICAL(col.names)")
+test(1658.27, fwrite(ok_dt, col.names="foobar"), error="isTRUEorFALSE(col.names)")
 
 # null data table (no columns)
 test(1658.28, fwrite(data.table(NULL)), NULL, warning="Nothing to write")
@@ -13010,8 +13068,6 @@ test(1967.15, foverlaps(x, y, nomatch = c(3, 4)),
      error = 'nomatch must either be NA or NULL')
 test(1967.16, foverlaps(x, y, nomatch = 4L),
      error = 'nomatch must either be NA or NULL')
-test(1967.17, foverlaps(x, y, type = 'equal'),
-     error = "type = 'equal' is not implemented yet")  # to be removed when implemented
 test(1967.18, foverlaps(x, y, by.x = 'start'),
      error = "by.x' and 'by.y' should contain at least two")
 test(1967.19, foverlaps(x, y, by.y = 'start'),
@@ -13460,8 +13516,8 @@ x = data.table(
   v2 = c(0,15, 50, 30, 0, 50))
 y = x[, lapply(.SD, sum), by=.(f1,f2)]
 z = dcast.data.table(data = y, f1 ~ f2, value.var = c("v1", "v2"))
-test(1990.1, z$v1, c(800, 1400)) # shouldn't be 1400, 800 ...
-test(1990.2, forderv(z$v1), integer(0)) # is already sorted ...
+test(1990.1, z$v1_U, c(800, 1400)) # shouldn't be 1400, 800 ...
+test(1990.2, forderv(z$v1_U), integer(0)) # is already sorted ...
 
 # foverlaps error message fix, #2645
 x <- data.table(id=1, start=1, end=5, start_f=factor(1))
@@ -13472,6 +13528,21 @@ test(1991.1, foverlaps(x, y), error="must be integer/numeric type")
 setkey(x, start, end)
 setkey(y, start_f, end)
 test(1991.2, foverlaps(x, y), error="must be integer/numeric type")
+# better error message foverlaps, #3007
+DT_x <- data.table(x1 = c(1,7,11,20), x2 = c(2,8,NA,22), xval = c("x_a","x_b","x_c","x_d"), key = c("x1","x2"))
+DT_y <- data.table(y1 = c(1,10), y2 = c(9,50), yval = c("y_a","y_b"), key = c("y1","y2"))
+test(1992.1, foverlaps(DT_x, DT_y), error="All rows with NA values")
+
+# foverlaps POSIXct checks #1143 + another check...
+xp <- data.frame(year = c(2006L, 2006L, 2006L), day = c(361L, 361L, 360L), 
+                 hour = c(14L, 8L, 8L), min = c(30L, 0L, 30L), val = c(0.5, 0.3, 0.4),
+                 Date = structure(c(1167229800, 1167206400, 1167121800), 
+                          class = c("POSIXct", "POSIXt"), tzone = "UTC")) ## "UTC" time zone
+setDT(xp)[, `:=`(start = Date - 1800L, end = Date + 1800L)]
+tt <- as.POSIXct(c("2006/12/27 14:23:59", "2006/12/27 16:47:59", "2006/12/27 19:12:00"), format = "%Y/%m/%d %T", tz = "Asia/Jerusalem") ## different time zone
+yp <- data.table(start = tt, end = tt, key=c("start", "end"))
+test(1993.1, foverlaps(xp, yp, nomatch = 0L, which=TRUE), data.table(xid=1L, yid=2L), warning="POSIXct interval cols have mixed timezones")
+test(1993.2, foverlaps(xp, yp, by.x=c("day", "year")), error="Some interval cols are of type POSIXct while others are not")
 
 # format_col and format_list_item printing helpers/generics
 ## Use case: solve #2842 by defining format_col.POSIXct to have usetz = TRUE
