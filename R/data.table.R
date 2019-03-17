@@ -241,6 +241,9 @@ chmatch2 <- function(x, table, nomatch=NA_integer_) {
     if (!missing(i) & is.data.table(ans)) setkey(ans,NULL)  # See test 304
     return(ans)
   }
+  # count of updated rows in .GlobalEnv$.Last.updated #1885
+  on.exit(assign(".Last.updated", envir=.GlobalEnv, value=.Last.updated), add=TRUE)
+  .Last.updated = NULL
   .global$print=""
   if (!missing(keyby)) {
     if (!missing(by)) stop("Provide either by= or keyby= but not both")
@@ -1151,6 +1154,7 @@ chmatch2 <- function(x, table, nomatch=NA_integer_) {
           cols = as.integer(m)
           newnames=NULL
           if (identical(irows, integer())) {
+            .Last.updated = 0L
             # Empty integer() means no rows e.g. logical i with only FALSE and NA
             # got converted to empty integer() by the which() above
             # Short circuit and do-nothing since columns already exist. If some don't
@@ -1396,6 +1400,7 @@ chmatch2 <- function(x, table, nomatch=NA_integer_) {
     if (!is.null(lhs)) {
       # TODO?: use set() here now that it can add new columns. Then remove newnames and alloc logic above.
       .Call(Cassign,x,irows,cols,newnames,jval,verbose)
+      .Last.updated = if (is.null(irows)) nrow(x) else sum(!is.na(irows)) # !is.na to handle update on join where there is no match
       return(suppPrint(x))
     }
     if ((is.call(jsub) && is.list(jval) && jsub[[1L]] != "get" && !is.object(jval)) || !missing(by)) {
